@@ -44,18 +44,35 @@ function extractFilename({ url }: { url: string }): string {
 	return `imported-media-${timestamp}`;
 }
 
+export async function fetchWithProxyFallback({
+	url,
+}: {
+	url: string;
+}): Promise<Blob> {
+	try {
+		const directResponse = await fetch(url);
+		if (!directResponse.ok) {
+			throw new Error(`Direct fetch failed: ${directResponse.status}`);
+		}
+		return await directResponse.blob();
+	} catch {
+		const proxyUrl = `/api/proxy/download?url=${encodeURIComponent(url)}`;
+		const proxyResponse = await fetch(proxyUrl);
+		if (!proxyResponse.ok) {
+			throw new Error(
+				`Failed to fetch: ${proxyResponse.status} ${proxyResponse.statusText}`,
+			);
+		}
+		return await proxyResponse.blob();
+	}
+}
+
 export async function fetchRemoteMediaAsFile({
 	url,
 }: {
 	url: string;
 }): Promise<File> {
-	const response = await fetch(url);
-
-	if (!response.ok) {
-		throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-	}
-
-	const blob = await response.blob();
+	const blob = await fetchWithProxyFallback({ url });
 	const contentType =
 		blob.type && blob.type !== "application/octet-stream"
 			? blob.type
