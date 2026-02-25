@@ -55,6 +55,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { uppercase } from "@/utils/string";
 import { useTranslation } from "@i18next-toolkit/react";
 import type { ComponentProps } from "react";
+import { VideoThumbnailStrip } from "./video-thumbnail-strip";
 
 function getDisplayShortcut(action: TAction) {
 	const { defaultShortcuts } = getActionDefinition(action);
@@ -161,18 +162,19 @@ export function TimelineElement({
 								: undefined,
 					}}
 				>
-					<ElementInner
-						element={element}
-						track={track}
-						isSelected={isSelected}
-						isBeingDragged={isBeingDragged}
-						hasAudio={hasAudio}
-						isMuted={isMuted}
-						mediaAssets={mediaAssets}
-						onElementClick={onElementClick}
-						onElementMouseDown={onElementMouseDown}
-						handleResizeStart={handleResizeStart}
-					/>
+				<ElementInner
+					element={element}
+					track={track}
+					zoomLevel={zoomLevel}
+					isSelected={isSelected}
+					isBeingDragged={isBeingDragged}
+					hasAudio={hasAudio}
+					isMuted={isMuted}
+					mediaAssets={mediaAssets}
+					onElementClick={onElementClick}
+					onElementMouseDown={onElementMouseDown}
+					handleResizeStart={handleResizeStart}
+				/>
 				</div>
 			</ContextMenuTrigger>
 			<ContextMenuContent className="z-200 w-64">
@@ -252,6 +254,7 @@ export function TimelineElement({
 function ElementInner({
 	element,
 	track,
+	zoomLevel,
 	isSelected,
 	isBeingDragged,
 	hasAudio,
@@ -263,6 +266,7 @@ function ElementInner({
 }: {
 	element: TimelineElementType;
 	track: TimelineTrack;
+	zoomLevel: number;
 	isSelected: boolean;
 	isBeingDragged: boolean;
 	hasAudio: boolean;
@@ -297,6 +301,7 @@ function ElementInner({
 					<ElementContent
 						element={element}
 						track={track}
+						zoomLevel={zoomLevel}
 						isSelected={isSelected}
 						mediaAssets={mediaAssets}
 					/>
@@ -367,11 +372,13 @@ function ResizeHandle({
 function ElementContent({
 	element,
 	track,
+	zoomLevel,
 	isSelected,
 	mediaAssets,
 }: {
 	element: TimelineElementType;
 	track: TimelineTrack;
+	zoomLevel: number;
 	isSelected: boolean;
 	mediaAssets: MediaAsset[];
 }) {
@@ -439,15 +446,35 @@ function ElementContent({
 		);
 	}
 
-	if (
-		mediaAsset.type === "image" ||
-		(mediaAsset.type === "video" && mediaAsset.thumbnailUrl)
-	) {
+	if (mediaAsset.type === "video" && mediaAsset.file) {
 		const trackHeight = getTrackHeight({ type: track.type });
-		const tileWidth = trackHeight * (16 / 9);
-		const imageUrl =
-			mediaAsset.type === "image" ? mediaAsset.url : mediaAsset.thumbnailUrl;
+		const elementWidth =
+			element.duration * TIMELINE_CONSTANTS.PIXELS_PER_SECOND * zoomLevel;
 
+		return (
+			<div className="flex size-full items-center justify-center">
+				<div
+					className={`relative size-full ${isSelected ? "bg-primary" : "bg-transparent"}`}
+				>
+					<VideoThumbnailStrip
+						mediaId={element.mediaId}
+						file={mediaAsset.file}
+						trimStart={element.trimStart}
+						duration={element.duration}
+						elementWidth={elementWidth}
+						trackHeight={trackHeight}
+						zoomLevel={zoomLevel}
+						fps={mediaAsset.fps ?? 30}
+						mediaWidth={mediaAsset.width ?? 1920}
+						mediaHeight={mediaAsset.height ?? 1080}
+						isSelected={isSelected}
+					/>
+				</div>
+			</div>
+		);
+	}
+
+	if (mediaAsset.type === "image" && mediaAsset.url) {
 		return (
 			<div className="flex size-full items-center justify-center">
 				<div
@@ -456,10 +483,10 @@ function ElementContent({
 					<div
 						className="absolute right-0 left-0"
 						style={{
-							backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
-							backgroundRepeat: "repeat-x",
-							backgroundSize: `${tileWidth}px ${trackHeight}px`,
-							backgroundPosition: "left center",
+							backgroundImage: `url(${mediaAsset.url})`,
+							backgroundRepeat: "no-repeat",
+							backgroundSize: "cover",
+							backgroundPosition: "center",
 							pointerEvents: "none",
 							top: isSelected ? "0.25rem" : "0rem",
 							bottom: isSelected ? "0.25rem" : "0rem",
