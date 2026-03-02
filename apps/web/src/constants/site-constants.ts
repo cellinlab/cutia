@@ -5,8 +5,8 @@ export const SITE_INFO = {
 	description:
 		"Cutia is an AI-native, open-source video editor in your browser — a free, privacy-first alternative to CapCut. AI-powered editing, multi-track timeline, MP4/WebM export with no uploads.",
 	url: SITE_URL,
-	openGraphImage: "/open-graph/default.jpg",
-	twitterImage: "/open-graph/default.jpg",
+	openGraphImage: "/icon.svg",
+	twitterImage: "/icon.svg",
 	favicon: "/logos/cutia/svg/logo.svg",
 };
 

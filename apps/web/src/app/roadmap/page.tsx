@@ -68,10 +68,9 @@ export const metadata: Metadata = {
 		type: "website",
 		images: [
 			{
-				url: "/open-graph/roadmap.jpg",
-				width: 1200,
-				height: 630,
-				alt: "Cutia Roadmap",
+				url: "/icon.svg",
+				width: 512,
+				height: 512,
 			},
 		],
 	},
@@ -80,7 +79,6 @@ export const metadata: Metadata = {
 		title: "Cutia Roadmap - What's Coming Next",
 		description:
 			"See what's coming next for Cutia - the free, open-source video editor that respects your privacy.",
-		images: ["/open-graph/roadmap.jpg"],
 	},
 };
 

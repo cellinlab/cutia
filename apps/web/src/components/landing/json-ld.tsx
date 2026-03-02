@@ -87,7 +87,7 @@ export function HomepageJsonLd() {
 			t("Drag-and-drop media import"),
 		],
 		alternativeFor: "CapCut",
-		screenshot: `${SITE_URL}/open-graph/default.jpg`,
+		screenshot: `${SITE_URL}/icon.svg`,
 		softwareVersion: "1.0",
 		author: {
 			"@type": "Organization",
@@ -126,9 +126,7 @@ export function HomepageJsonLd() {
 			<script type="application/ld+json">
 				{JSON.stringify(organizationSchema)}
 			</script>
-			<script type="application/ld+json">
-				{JSON.stringify(faqSchema)}
-			</script>
+			<script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
 		</>
 	);
 }
