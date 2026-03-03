@@ -16,6 +16,7 @@ export interface ResizeState {
 	initialTrimEnd: number;
 	initialStartTime: number;
 	initialDuration: number;
+	initialPlaybackRate: number;
 }
 
 interface UseTimelineElementResizeProps {
@@ -60,6 +61,12 @@ export function useTimelineElementResize({
 		e.stopPropagation();
 		e.preventDefault();
 
+		const rate =
+			(element.type === "video" || element.type === "audio") &&
+			"playbackRate" in element
+				? ((element.playbackRate as number) ?? 1)
+				: 1;
+
 		setResizing({
 			elementId,
 			side,
@@ -68,6 +75,7 @@ export function useTimelineElementResize({
 			initialTrimEnd: element.trimEnd,
 			initialStartTime: element.startTime,
 			initialDuration: element.duration,
+			initialPlaybackRate: rate,
 		});
 
 		setCurrentTrimStart(element.trimStart);
@@ -136,26 +144,28 @@ export function useTimelineElementResize({
 		onSnapPointChange?.(resizeSnapPoint);
 
 		if (resizing.side === "left") {
+			const rate = resizing.initialPlaybackRate;
 			const sourceDuration =
 				resizing.initialTrimStart +
-				resizing.initialDuration +
+				resizing.initialDuration * rate +
 				resizing.initialTrimEnd;
 			const maxAllowed =
-				sourceDuration - resizing.initialTrimEnd - minDurationSeconds;
-			const calculated = resizing.initialTrimStart + deltaTime;
+				sourceDuration - resizing.initialTrimEnd - minDurationSeconds * rate;
+			const calculated = resizing.initialTrimStart + deltaTime * rate;
 
 			if (calculated >= 0 && calculated <= maxAllowed) {
 				const newTrimStart = snapTimeToFrame({
 					time: Math.min(maxAllowed, calculated),
 					fps: projectFps,
 				});
-				const trimDelta = newTrimStart - resizing.initialTrimStart;
+				const sourceTrimDelta = newTrimStart - resizing.initialTrimStart;
+				const timelineDelta = sourceTrimDelta / rate;
 				const newStartTime = snapTimeToFrame({
-					time: resizing.initialStartTime + trimDelta,
+					time: resizing.initialStartTime + timelineDelta,
 					fps: projectFps,
 				});
 				const newDuration = snapTimeToFrame({
-					time: resizing.initialDuration - trimDelta,
+					time: resizing.initialDuration - timelineDelta,
 					fps: projectFps,
 				});
 
@@ -167,7 +177,7 @@ export function useTimelineElementResize({
 				currentDurationRef.current = newDuration;
 			} else if (calculated < 0) {
 				if (canExtendElementDuration()) {
-					const extensionAmount = Math.abs(calculated);
+					const extensionAmount = Math.abs(calculated) / rate;
 					const maxExtension = resizing.initialStartTime;
 					const actualExtension = Math.min(extensionAmount, maxExtension);
 					const newStartTime = snapTimeToFrame({
@@ -186,13 +196,14 @@ export function useTimelineElementResize({
 					currentStartTimeRef.current = newStartTime;
 					currentDurationRef.current = newDuration;
 				} else {
-					const trimDelta = 0 - resizing.initialTrimStart;
+					const sourceTrimDelta = 0 - resizing.initialTrimStart;
+					const timelineDelta = sourceTrimDelta / rate;
 					const newStartTime = snapTimeToFrame({
-						time: resizing.initialStartTime + trimDelta,
+						time: resizing.initialStartTime + timelineDelta,
 						fps: projectFps,
 					});
 					const newDuration = snapTimeToFrame({
-						time: resizing.initialDuration - trimDelta,
+						time: resizing.initialDuration - timelineDelta,
 						fps: projectFps,
 					});
 
@@ -205,17 +216,18 @@ export function useTimelineElementResize({
 				}
 			}
 		} else {
+			const rate = resizing.initialPlaybackRate;
 			const sourceDuration =
 				resizing.initialTrimStart +
-				resizing.initialDuration +
+				resizing.initialDuration * rate +
 				resizing.initialTrimEnd;
-			const newTrimEnd = resizing.initialTrimEnd - deltaTime;
+			const newTrimEnd = resizing.initialTrimEnd - deltaTime * rate;
 
 			if (newTrimEnd < 0) {
 				if (canExtendElementDuration()) {
-					const extensionNeeded = Math.abs(newTrimEnd);
+					const extensionNeeded = Math.abs(newTrimEnd) / rate;
 					const baseDuration =
-						resizing.initialDuration + resizing.initialTrimEnd;
+						resizing.initialDuration + resizing.initialTrimEnd / rate;
 					const newDuration = snapTimeToFrame({
 						time: baseDuration + extensionNeeded,
 						fps: projectFps,
@@ -226,9 +238,8 @@ export function useTimelineElementResize({
 					currentDurationRef.current = newDuration;
 					currentTrimEndRef.current = 0;
 				} else {
-					const extensionToLimit = resizing.initialTrimEnd;
 					const newDuration = snapTimeToFrame({
-						time: resizing.initialDuration + extensionToLimit,
+						time: resizing.initialDuration + resizing.initialTrimEnd / rate,
 						fps: projectFps,
 					});
 
@@ -239,15 +250,15 @@ export function useTimelineElementResize({
 				}
 			} else {
 				const maxTrimEnd =
-					sourceDuration - resizing.initialTrimStart - minDurationSeconds;
+					sourceDuration - resizing.initialTrimStart - minDurationSeconds * rate;
 				const clampedTrimEnd = Math.min(maxTrimEnd, Math.max(0, newTrimEnd));
 				const finalTrimEnd = snapTimeToFrame({
 					time: clampedTrimEnd,
 					fps: projectFps,
 				});
-				const trimDelta = finalTrimEnd - resizing.initialTrimEnd;
+				const sourceTrimDelta = finalTrimEnd - resizing.initialTrimEnd;
 				const newDuration = snapTimeToFrame({
-					time: resizing.initialDuration - trimDelta,
+					time: resizing.initialDuration - sourceTrimDelta / rate,
 					fps: projectFps,
 				});
 
