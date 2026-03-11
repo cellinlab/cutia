@@ -3,7 +3,7 @@ import { Features } from "@/components/landing/features";
 import { FAQSection } from "@/components/landing/faq-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { StarField } from "@/components/landing/starfield";
-import { HomepageJsonLd } from "@/components/landing/json-ld";
+import { HomepageJsonLd } from "@/components/landing/homepage-json-ld";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import type { Metadata } from "next";
@@ -32,10 +32,16 @@ export const metadata: Metadata = {
 	],
 };
 
-export default async function Home() {
+export default async function Home({
+	params,
+}: {
+	params: Promise<{ locale: string }>;
+}) {
+	const { locale } = await params;
+
 	return (
 		<main className="min-h-svh">
-			<HomepageJsonLd />
+			<HomepageJsonLd locale={locale} />
 			<StarField />
 			<Header />
 			<Hero />

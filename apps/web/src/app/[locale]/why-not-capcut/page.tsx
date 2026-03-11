@@ -48,13 +48,19 @@ export const metadata: Metadata = {
 	},
 };
 
-export default function WhyNotCapcutPage() {
+export default async function WhyNotCapcutPage({
+	params,
+}: {
+	params: Promise<{ locale: string }>;
+}) {
+	const { locale } = await params;
+
 	return (
 		<BasePage
 			title="Why not CapCut?"
 			description="Cutia is a free, open-source, privacy-first alternative to CapCut. Here's how they compare."
 		>
-			<ComparisonJsonLd />
+			<ComparisonJsonLd locale={locale} />
 
 			<section className="flex flex-col gap-4">
 				<h2 className="text-2xl font-semibold">

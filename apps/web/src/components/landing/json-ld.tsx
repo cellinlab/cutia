@@ -1,6 +1,5 @@
 "use client";
 
-import { SITE_URL, SOCIAL_LINKS } from "@/constants/site-constants";
 import { useTranslation } from "@i18next-toolkit/nextjs-approuter";
 
 export function useLocalizedFaqItems() {
@@ -50,83 +49,4 @@ export function useLocalizedFaqItems() {
 			),
 		},
 	];
-}
-
-export function HomepageJsonLd() {
-	const { t } = useTranslation();
-	const faqItems = useLocalizedFaqItems();
-
-	const webApplicationSchema = {
-		"@context": "https://schema.org",
-		"@type": "WebApplication",
-		name: "Cutia",
-		url: SITE_URL,
-		description: t(
-			"Cutia is an AI-native, open-source video editor that runs entirely in your browser. A free, privacy-first alternative to CapCut with AI-powered editing, multi-track timeline, and MP4/WebM export — no uploads, no tracking.",
-		),
-		applicationCategory: "MultimediaApplication",
-		operatingSystem: "Any (Browser-based)",
-		browserRequirements: t(
-			"Requires a modern web browser with WebCodecs support",
-		),
-		offers: {
-			"@type": "Offer",
-			price: "0",
-			priceCurrency: "USD",
-		},
-		featureList: [
-			t("AI-native video editing workflow"),
-			t("AI agent for automated video editing"),
-			t("AI image generation"),
-			t("Audio transcription and caption generation"),
-			t("Multi-track video timeline"),
-			t("Browser-based video editing"),
-			t("Privacy-first local processing"),
-			t("MP4 and WebM export"),
-			t("Text and sticker overlays"),
-			t("Drag-and-drop media import"),
-		],
-		alternativeFor: "CapCut",
-		screenshot: `${SITE_URL}/icon.svg`,
-		softwareVersion: "1.0",
-		author: {
-			"@type": "Organization",
-			name: "Cutia",
-			url: SITE_URL,
-		},
-	};
-
-	const organizationSchema = {
-		"@context": "https://schema.org",
-		"@type": "Organization",
-		name: "Cutia",
-		url: SITE_URL,
-		logo: `${SITE_URL}/logos/cutia/svg/logo.svg`,
-		sameAs: [SOCIAL_LINKS.github, "https://x.com/moonrailgun"],
-	};
-
-	const faqSchema = {
-		"@context": "https://schema.org",
-		"@type": "FAQPage",
-		mainEntity: faqItems.map((item) => ({
-			"@type": "Question",
-			name: item.question,
-			acceptedAnswer: {
-				"@type": "Answer",
-				text: item.answer,
-			},
-		})),
-	};
-
-	return (
-		<>
-			<script type="application/ld+json">
-				{JSON.stringify(webApplicationSchema)}
-			</script>
-			<script type="application/ld+json">
-				{JSON.stringify(organizationSchema)}
-			</script>
-			<script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-		</>
-	);
 }
